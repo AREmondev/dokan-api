@@ -41,10 +41,15 @@ const customerSchema = mongoose.Schema(
       default: false
     },
     createdBy: {
-      type: String,
-      required: true,
+      type: mongoose.Types.ObjectId,
+      ref: "User"
     },
-    transitions: [TransitionSchema],
+    transitions: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Transition"
+      }
+    ],
     password: {
       type: String,
       required: true,

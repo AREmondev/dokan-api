@@ -1,10 +1,15 @@
-import express from 'express'
+import express from "express";
 import {
-  createNewCustomer
-} from '../controllers/customerController.js'
-import { protect } from '../middleware/authMiddleware.js'
+  createNewCustomer,
+  payment,
+  getSingleCustomer,
+  createOrder,
+  getAllCustomer,
+  filterCustomer,
+} from "../controllers/customerController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
-const router = express.Router()
+const router = express.Router();
 
 // router.route('/login').post(authCustomer)
 // router
@@ -13,6 +18,12 @@ const router = express.Router()
 //   .put(protect, updateCustomerProfile)
 
 // router.route('/signup').post(protect, registerNewCustomer)
-router.route('/create-customer').post(protect, createNewCustomer)
+router.route("/create-customer").post(protect, createNewCustomer);
+router.route("/customers").get(protect, getAllCustomer);
 
-export default router
+router.route("/filterCustomer").get(protect, filterCustomer);
+router.route("/:id").get(protect, getSingleCustomer);
+router.route("/payment").post(protect, payment);
+router.route("/order").post(protect, createOrder);
+
+export default router;

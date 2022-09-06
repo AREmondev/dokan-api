@@ -12,12 +12,13 @@ app.use(express.json())
 app.use(cors())
 // app.use(notFound)
 
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 8000
 
 connectDB()
 app.get('/', (req, res) => {
-  res.send('Running ......')
+  res.send('Running 1.....')
 })
+
 
 app.use('/api/product', productRoutes)
 app.use('/api/users', userRoutes)

@@ -1,7 +1,11 @@
 import mongoose from 'mongoose'
-import bcrypt from 'bcryptjs'
+import bcrypt  from 'bcryptjs'
 const transitionSchema = mongoose.Schema(
   {
+    createdAt: {
+      type: Date,
+      default: new Date()
+    },
     type: { type: String, required: true },
     payment: { type: Number, required: false, default: 0 },
     products: { type: Array, required: false, default: [] },

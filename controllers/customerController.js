@@ -50,7 +50,7 @@ import fetch from "node-fetch";
 //       token: generateToken(customer._id),
 //     })
 //   } else {
-//     res.status(400).JSON({ message: 'Invalid customer data' })
+//     res.status(400).json({ message: 'Invalid customer data' })
 //   }
 // })
 
@@ -120,10 +120,10 @@ export const createNewCustomer = asyncHandler(async (req, res) => {
         token: generateToken(customer._id),
       });
     } else {
-      res.status(400).JSON({ message: "Invalid customer data" });
+      res.status(400).json({ message: "Invalid customer data" });
     }
   } else {
-    res.status(401).JSON({ message: "Unauthorized User" });
+    res.status(401).json({ message: "Unauthorized User" });
   }
 });
 export const getAllCustomer = asyncHandler(async (req, res) => {
@@ -137,10 +137,10 @@ export const getAllCustomer = asyncHandler(async (req, res) => {
         customer,
       });
     } else {
-      res.status(400).JSON({ message: "Invalid customer data" });
+      res.status(400).json({ message: "Invalid customer data" });
     }
   } else {
-    res.status(401).JSON({ message: "Unauthorized User" });
+    res.status(401).json({ message: "Unauthorized User" });
   }
 });
 export const filterCustomer = asyncHandler(async (req, res) => {
@@ -186,12 +186,12 @@ export const filterCustomer = asyncHandler(async (req, res) => {
     //         docs,
     //       });
     //     } else {
-    //       res.status(400).JSON({ message: "Invalid customer data" });
+    //       res.status(400).json({ message: "Invalid customer data" });
     //     }
     //   }
     // );
   } else {
-    res.status(401).JSON({ message: "Unauthorized User" });
+    res.status(401).json({ message: "Unauthorized User" });
   }
 });
 export const getSingleCustomer = asyncHandler(async (req, res) => {
@@ -204,7 +204,7 @@ export const getSingleCustomer = asyncHandler(async (req, res) => {
       customer,
     });
   } else {
-    res.status(400).JSON({ message: "Invalid customer data" });
+    res.status(400).json({ message: "Invalid customer data" });
   }
 });
 
@@ -236,14 +236,16 @@ export const createOrder = asyncHandler(async (req, res) => {
 
       products[pd._id] = { pd, ...products[pd._id] };
     } else {
-      res.status(402).JSON({ message: `${pd.name} Stock out` });
+      res.status(402).json({ message: `${pd.name} Stock out` });
       res.end();
     }
   }
-  console.log(allProduct);
-  let prevDue = transitionAll[transitionAll.length - 1].totalDue
+  let prevDue = 0
+  if(transitionAll.length > 0){
+    prevDue = transitionAll[transitionAll.length - 1].totalDue
     ? transitionAll[transitionAll.length - 1].totalDue
     : 0;
+  }
   let totalDue = prevDue + total;
   if (req.user.isAdmin == true) {
     let createdBy = req.user._id;
@@ -257,26 +259,23 @@ export const createOrder = asyncHandler(async (req, res) => {
     });
 
     if (transition) {
-      await Customer.updateOne(
-        {
-          _id: customer,
-        },
-        {
-          $push: {
-            transitions: transition._id,
-          },
-        }
-      );
-      res.status(201).json({
-        transition,
-      });
+      let prevCustomer = await Customer.findOne({_id: customer})
+      prevCustomer.total_due = parseInt(prevCustomer.total_due) +  parseInt(transition.due)
+      prevCustomer.transitions.push(transition._id)
+      let newCustomer = await prevCustomer.save()
+      if(newCustomer){
+        res.status(201).json({
+          transition,
+        });
+      }
     } else {
-      res.status(400).JSON({ message: "Invalid customer data" });
+      res.status(400).json({ message: "Invalid customer data" });
     }
   } else {
-    res.status(401).JSON({ message: "Unauthorized User" });
+    res.status(401).json({ message: "Unauthorized User" });
   }
 });
+
 
 export const payment = asyncHandler(async (req, res) => {
   const { payment, type, customer } = req.body;
@@ -317,7 +316,7 @@ export const payment = asyncHandler(async (req, res) => {
         let today = "" + new Date();
         let text = `আপনি আজকে(${today.split(" ")[1]} ${today.split(" ")[2]} ${
           today.split(" ")[3]
-        }) ২৫০ টাকা জমা দিয়েছেন । আপনার বর্তমান বাকি ৮০ টাকা ।
+        }) ${payment}  টাকা জমা দিয়েছেন । আপনার বর্তমান বাকি ${newCustomer.totalDue} টাকা ।
           মেসার্স রহমান ট্রেডার্স `;
 
         const url = `http://66.45.237.70/api.php?username=01644686490&password=MVBK93WP&number=8801644686490&message=${text}`;
@@ -335,9 +334,9 @@ export const payment = asyncHandler(async (req, res) => {
           });
       }
     } else {
-      res.status(400).JSON({ message: "Invalid customer data" });
+      res.status(400).json({ message: "Invalid customer data" });
     }
   } else {
-    res.status(401).JSON({ message: "Unauthorized User" });
+    res.status(401).json({ message: "Unauthorized User" });
   }
 });

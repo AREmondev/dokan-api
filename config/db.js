@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 const connectDB = () => {
   try {
     mongoose.connect(
-      'mongodb+srv://proshop:proshop@proshop.vik1n.mongodb.net/proshop?retryWrites=true&w=majority',
+      'mongodb+srv://emon:emon1122@cluster0.luzy6.mongodb.net/?retryWrites=true&w=majority',
       { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true },
       console.log('Connected'),
     )

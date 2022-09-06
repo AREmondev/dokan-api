@@ -57,7 +57,7 @@ const customerSchema = mongoose.Schema(
     },
     isAdmin: {
       type: Boolean,
-      required: true,
+      required: false,
       default: false,
     },
     

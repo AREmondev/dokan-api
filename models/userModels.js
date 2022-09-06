@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 const TransitionSchema = mongoose.Schema(
   {
+    
     type: { type: String, required: true },
     payment: { type: Number, required: true, default: 0 },
     due: { type: Number, required: true, default: 0 },
@@ -29,7 +30,7 @@ const userSchema = mongoose.Schema(
     },
     village: {
       type: String,
-      required: true,
+      required: false,
     },
     total_due: {
       type: Number,

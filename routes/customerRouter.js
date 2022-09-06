@@ -19,11 +19,12 @@ const router = express.Router();
 
 // router.route('/signup').post(protect, registerNewCustomer)
 router.route("/create-customer").post(protect, createNewCustomer);
-router.route("/customers").get(protect, getAllCustomer);
+router.route("/").get(protect, getAllCustomer);
 
 router.route("/filterCustomer").get(protect, filterCustomer);
 router.route("/:id").get(protect, getSingleCustomer);
 router.route("/payment").post(protect, payment);
 router.route("/order").post(protect, createOrder);
+
 
 export default router;

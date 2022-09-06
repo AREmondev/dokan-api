@@ -1,5 +1,6 @@
 import Order from '../models/orderModels.js'
 import asyncHandler from 'express-async-handler'
+import Transition from '../models/transitionModels.js'
 
 export const addOrderItems = asyncHandler(async (req, res) => {
   const {
@@ -11,6 +12,7 @@ export const addOrderItems = asyncHandler(async (req, res) => {
     shippingPrice,
     totalPrice,
   } = req.body
+  console.log(req.body)
   if (orderItems && orderItems.length === 0) {
     res.status(400)
   } else {
@@ -28,7 +30,18 @@ export const addOrderItems = asyncHandler(async (req, res) => {
     res.json(createdOrder)
   }
 })
-
+export const getAllOrder = asyncHandler(async (req, res) => {
+  if (req.user.isAdmin == true) {
+    const transition = await Transition.find().populate('customer').populate('createdBy')
+    console.log(transition)
+    if (transition) {
+      res.json(transition)
+    } else {
+      res.status(404).json({ message: 'Order Not Found' })
+    }
+  }
+ 
+});
 export const singleOrderItems = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id).populate(
     'user',

@@ -34,10 +34,11 @@ const customerSchema = mongoose.Schema(
     previous_due: {
       type: Number,
       required: false,
+      default: 0
     },
     newCustomer: {
       type: Boolean,
-      required: true,
+      required: false,
       default: false
     },
     createdBy: {
@@ -52,8 +53,7 @@ const customerSchema = mongoose.Schema(
     ],
     password: {
       type: String,
-      required: true,
-      default: '12345678'
+      required: false,
     },
     isAdmin: {
       type: Boolean,
@@ -65,16 +65,6 @@ const customerSchema = mongoose.Schema(
   { timestamp: true },
 )
 
-customerSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
-}
-customerSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next()
-  }
-  const salt = await bcrypt.genSalt(10)
-  this.password = await bcrypt.hash(this.password, salt)
-})
 
 const Customer = mongoose.model('Customer', customerSchema)
 export default Customer

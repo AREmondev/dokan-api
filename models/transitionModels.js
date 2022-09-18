@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import bcrypt  from 'bcryptjs'
 const transitionSchema = mongoose.Schema(
   {
     createdAt: {
@@ -13,7 +12,8 @@ const transitionSchema = mongoose.Schema(
     totalDue:  { type: Number, required: false, default: 0 },
     customer: {
         type: mongoose.Types.ObjectId,
-        ref: "Customer"
+        ref: "Customer",
+        required: false,
     },
     createdBy: {
       type: mongoose.Types.ObjectId,

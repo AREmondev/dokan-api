@@ -128,65 +128,109 @@ export const createOrder = asyncHandler(async (req, res) => {
   let allProduct = await Product.find({ _id: { $in: Object.keys(products) } });
   let transitionAll = await Transition.find({ customer: customer });
 
-  let total = 0;
-  let newStock;
-  for (let pd of allProduct) {
-    if (pd.countInStock > products[pd._id].qty) {
-      total += products[pd._id].qty * pd.price;
-      newStock = pd.countInStock - products[pd._id].qty;
-      pd.countInStock = newStock;
-
-      Product.updateOne(
-        { _id: pd._id },
-        { countInStock: newStock },
-        function (err, records) {
-          if (err) {
-            return false;
-          } else {
-            return true;
+  var total = 0;
+  var newStock;
+  if(type == 'order'){
+    for (let pd of allProduct) {
+      if (pd.countInStock > products[pd._id].qty) {
+        total += products[pd._id].qty * pd.price;
+        newStock = pd.countInStock - products[pd._id].qty;
+        pd.countInStock = newStock;
+  
+        Product.updateOne(
+          { _id: pd._id },
+          { countInStock: newStock },
+          function (err, records) {
+            if (err) {
+              return false;
+            } else {
+              return true;
+            }
           }
-        }
-      );
-
-      products[pd._id] = { pd, ...products[pd._id] };
-    } else {
-      res.status(402).json({ message: `${pd.name} Stock out` });
-      res.end();
+        );
+  
+        products[pd._id] = { pd, ...products[pd._id] };
+      } else {
+        res.status(402).json({ message: `${pd.name} Stock out` });
+        res.end();
+      }
     }
-  }
-  let prevDue = 0
-  if(transitionAll.length > 0){
-    prevDue = transitionAll[transitionAll.length - 1].totalDue
-    ? transitionAll[transitionAll.length - 1].totalDue
-    : 0;
-  }
-  let totalDue = prevDue + total;
-  if (req.user.isAdmin == true) {
-    let createdBy = req.user._id;
-    const transition = await Transition.create({
-      products,
-      type,
-      customer,
-      totalDue: totalDue,
-      createdBy,
-      due: total,
-    });
-
-    if (transition) {
-      let prevCustomer = await Customer.findOne({_id: customer})
-      prevCustomer.total_due = parseInt(prevCustomer.total_due) +  parseInt(transition.due)
-      prevCustomer.transitions.push(transition._id)
-      let newCustomer = await prevCustomer.save()
-      if(newCustomer){
-        res.status(201).json({
-          transition,
-        });
+    let prevDue = 0
+    if(transitionAll.length > 0){
+      prevDue = transitionAll[transitionAll.length - 1].totalDue
+      ? transitionAll[transitionAll.length - 1].totalDue
+      : 0;
+    }
+    let totalDue = prevDue + total;
+    if (req.user.isAdmin == true) {
+      let createdBy = req.user._id;
+      const transition = await Transition.create({
+        products,
+        type,
+        customer,
+        totalDue: totalDue,
+        createdBy,
+        due: total,
+      });
+  
+      if (transition) {
+        let prevCustomer = await Customer.findOne({_id: customer})
+        prevCustomer.total_due = parseInt(prevCustomer.total_due) +  parseInt(transition.due)
+        prevCustomer.transitions.push(transition._id)
+        let newCustomer = await prevCustomer.save()
+        if(newCustomer){
+          res.status(201).json({
+            transition,
+          });
+        }
+      } else {
+        res.status(400).json({ message: "Invalid customer data" });
       }
     } else {
-      res.status(400).json({ message: "Invalid customer data" });
+      res.status(401).json({ message: "Unauthorized User" });
     }
-  } else {
-    res.status(401).json({ message: "Unauthorized User" });
+  }else if (type === 'stock'){
+    console.log("reached")
+    for (let pd of allProduct) {
+        total += products[pd._id].qty * pd.price;
+        newStock = pd.countInStock + products[pd._id].qty;
+        console.log(newStock)
+        pd.countInStock = newStock;
+  
+        Product.updateOne(
+          { _id: pd._id },
+          { countInStock: newStock },
+          function (err, records) {
+            if (err) {
+              return false;
+            } else {
+              return true;
+            }
+          }
+        );
+        console.log(Product)
+  
+        products[pd._id] = { pd, ...products[pd._id] };
+      
+    }
+    if (req.user.isAdmin == true) {
+      let createdBy = req.user._id;
+      const transition = await Transition.create({
+        products,
+        type,
+        customer,
+        totalDue: null,
+        createdBy,
+        due: total,
+      });
+  
+      console.log(transition)
+      res.status(201).json({
+        transition,
+      });
+    } else {
+      res.status(401).json({ message: "Unauthorized User" });
+    }
   }
 });
 

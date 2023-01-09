@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 8000;
 
 connectDB();
 app.get("/", (req, res) => {
-   res.send("Running 2 ");
+   res.send("Running");
 });
 
 app.use("/api/product", productRoutes);

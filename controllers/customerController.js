@@ -6,315 +6,298 @@ import generateToken from "../utills/generateToken.js";
 import fetch from "node-fetch";
 
 export const createNewCustomer = asyncHandler(async (req, res) => {
-  const {
-    name,
-    father_name,
-    village,
-    phone_number,
-    total_due,
-    pageId
-  } = req.body;
-  if (req.user.isAdmin == true) {
-    console.log(req.body)
-    let createdBy = req.user._id;
-    const customer = await Customer({
-      pageId,
-      name,
-      father_name,
-      village,
-      phone_number,
-      total_due,
-      createdBy,
-    });
-    console.log(customer);
-    let newCustomer = await customer.save();
-    console.log(newCustomer)
-
-    if (customer) {
-      res.status(201).json({
-        customer,
-        token: generateToken(customer._id),
+   const { name, father_name, village, phone_number, total_due, pageId } = req.body;
+   if (req.user.isAdmin == true) {
+      console.log(req.body);
+      let createdBy = req.user._id;
+      const customer = await Customer({
+         pageId,
+         name,
+         father_name,
+         village,
+         phone_number,
+         total_due,
+         createdBy,
       });
-    } else {
-      res.status(400);
-    }
-  } else {
-    res.status(401).json({ message: "Unauthorized User" });
-  }
+      console.log(customer);
+      let newCustomer = await customer.save();
+      console.log(newCustomer);
+
+      if (customer) {
+         res.status(201).json({
+            customer,
+            token: generateToken(customer._id),
+         });
+      } else {
+         res.status(400);
+      }
+   } else {
+      res.status(401).json({ message: "Unauthorized User" });
+   }
 });
 export const getAllCustomer = asyncHandler(async (req, res) => {
-  if (req.user.isAdmin == true) {
-    const customer = await Customer.find()
-      .populate("transitions")
-      .populate("createdBy");
+   if (req.user.isAdmin == true) {
+      const customer = await Customer.find().populate("transitions").populate("createdBy");
 
-    if (customer) {
-      res.status(200).json({
-        customer,
-      });
-    } else {
-      res.status(400).json({ message: "Invalid customer data" });
-    }
-  } else {
-    res.status(401).json({ message: "Unauthorized User" });
-  }
+      if (customer) {
+         res.status(200).json({
+            customer,
+         });
+      } else {
+         res.status(400).json({ message: "Invalid customer data" });
+      }
+   } else {
+      res.status(401).json({ message: "Unauthorized User" });
+   }
 });
 export const filterCustomer = asyncHandler(async (req, res) => {
-  if (req.user.isAdmin == true) {
-    console.log(req.query.filter);
-    Customer.find({}) //grabs all subcategoris
-      .where("name")
-      .equals("Ro")
-      .exec(function (err, data) {
-        if (err) {
-          console.log(err);
-          console.log("error returned");
-          res.send(500, { error: "Failed insert" });
-        }
+   if (req.user.isAdmin == true) {
+      console.log(req.query.filter);
+      Customer.find({}) //grabs all subcategoris
+         .where("name")
+         .equals("Ro")
+         .exec(function (err, data) {
+            if (err) {
+               console.log(err);
+               console.log("error returned");
+               res.send(500, { error: "Failed insert" });
+            }
 
-        if (!data) {
-          res.send(403, { error: "Authentication Failed" });
-        }
+            if (!data) {
+               res.send(403, { error: "Authentication Failed" });
+            }
 
-        res.send(200, data);
-        console.log("success generate List");
-      });
-    // Customer.find(
-    //   {
-    //     $or: [
-    //       {
-    //         name: `${req.query.filter}`,
-    //       },
-    //       {
-    //         phone: req.query.filter,
-    //       },
-    //     ],
-    //     // $and: [
-    //     //   {
-    //     //     village: "Andhorail",
-    //     //   },
-    //     // ],
-    //   },
-    //   function (err, docs) {
-    //     console.log(docs);
-    //     if (!err) {
-    //       res.status(200).json({
-    //         docs,
-    //       });
-    //     } else {
-    //       res.status(400).json({ message: "Invalid customer data" });
-    //     }
-    //   }
-    // );
-  } else {
-    res.status(401).json({ message: "Unauthorized User" });
-  }
+            res.send(200, data);
+            console.log("success generate List");
+         });
+      // Customer.find(
+      //   {
+      //     $or: [
+      //       {
+      //         name: `${req.query.filter}`,
+      //       },
+      //       {
+      //         phone: req.query.filter,
+      //       },
+      //     ],
+      //     // $and: [
+      //     //   {
+      //     //     village: "Andhorail",
+      //     //   },
+      //     // ],
+      //   },
+      //   function (err, docs) {
+      //     console.log(docs);
+      //     if (!err) {
+      //       res.status(200).json({
+      //         docs,
+      //       });
+      //     } else {
+      //       res.status(400).json({ message: "Invalid customer data" });
+      //     }
+      //   }
+      // );
+   } else {
+      res.status(401).json({ message: "Unauthorized User" });
+   }
 });
 export const getSingleCustomer = asyncHandler(async (req, res) => {
-  const customer = await Customer.findById(req.params.id).populate(
-    "transitions"
-  );
+   const customer = await Customer.findById(req.params.id).populate("transitions");
 
-  if (customer) {
-    res.status(200).json({
-      customer,
-    });
-  } else {
-    res.status(400).json({ message: "Invalid customer data" });
-  }
+   if (customer) {
+      res.status(200).json({
+         customer,
+      });
+   } else {
+      res.status(400).json({ message: "Invalid customer data" });
+   }
 });
 export const updateCustomerPageId = asyncHandler(async (req, res) => {
-  const customer = await Customer.findById(req.params.id)
+   const customer = await Customer.findById(req.params.id);
 
-  if (customer) {
-    customer.pageId = req.body.pageId
-    let newCustomer = await customer.save();
-    res.status(200).json({
-      newCustomer,
-    });
-  } else {
-    res.status(400).json({ message: "Invalid customer data" });
-  }
+   if (customer) {
+      customer.pageId = req.body.pageId;
+      let newCustomer = await customer.save();
+      res.status(200).json({
+         newCustomer,
+      });
+   } else {
+      res.status(400).json({ message: "Invalid customer data" });
+   }
 });
 export const createOrder = asyncHandler(async (req, res) => {
-  const { products, type, customer } = req.body;
-  
-  let allProduct = await Product.find({ _id: { $in: Object.keys(products) } });
-  let transitionAll = await Transition.find({ customer: customer });
+   const { products, type, customer } = req.body;
 
-  var total = 0;
-  var newStock;
-  if(type == 'order'){
-    if(products['638744b46a203f7356044615']?.name != 'Custom'){
+   let allProduct = await Product.find({ _id: { $in: Object.keys(products) } });
+   let transitionAll = await Transition.find({ customer: customer });
+
+   var total = 0;
+   var newStock;
+   if (type == "order") {
+      if (products["638744b46a203f7356044615"]?.name != "Custom") {
+         for (let pd of allProduct) {
+            if (pd.countInStock > products[pd._id].qty) {
+               total += products[pd._id].qty * pd.price;
+               newStock = pd.countInStock - products[pd._id].qty;
+               pd.countInStock = newStock;
+
+               Product.updateOne(
+                  { _id: pd._id },
+                  { countInStock: newStock },
+                  function (err, records) {
+                     if (err) {
+                        return false;
+                     } else {
+                        return true;
+                     }
+                  }
+               );
+
+               products[pd._id] = { pd, ...products[pd._id] };
+            } else {
+               res.status(402).json({ message: `${pd.name} Stock out` });
+               res.end();
+            }
+         }
+      } else {
+         total = products["638744b46a203f7356044615"].total_price;
+      }
+
+      let prevDue = 0;
+      if (transitionAll.length > 0) {
+         prevDue = transitionAll[transitionAll.length - 1].totalDue
+            ? transitionAll[transitionAll.length - 1].totalDue
+            : 0;
+      }
+      console.log(total);
+      let totalDue = prevDue + total;
+      if (req.user.isAdmin == true) {
+         let createdBy = req.user._id;
+         const transition = await Transition.create({
+            products,
+            type,
+            customer,
+            totalDue: totalDue,
+            createdBy,
+            due: total,
+         });
+
+         if (transition) {
+            let prevCustomer = await Customer.findOne({ _id: customer });
+            prevCustomer.total_due = parseInt(prevCustomer.total_due) + parseInt(transition.due);
+            prevCustomer.transitions.push(transition._id);
+            let newCustomer = await prevCustomer.save();
+            if (newCustomer) {
+               res.status(201).json({
+                  transition,
+               });
+            }
+         } else {
+            res.status(400).json({ message: "Invalid customer data" });
+         }
+      } else {
+         res.status(401).json({ message: "Unauthorized User" });
+      }
+   } else if (type === "stock") {
+      console.log("reached");
       for (let pd of allProduct) {
-      if (pd.countInStock > products[pd._id].qty) {
-        total += products[pd._id].qty * pd.price;
-        newStock = pd.countInStock - products[pd._id].qty;
-        pd.countInStock = newStock;
-  
-        Product.updateOne(
-          { _id: pd._id },
-          { countInStock: newStock },
-          function (err, records) {
+         total += products[pd._id].qty * pd.price;
+         newStock = pd.countInStock + products[pd._id].qty;
+         console.log(newStock);
+         pd.countInStock = newStock;
+
+         Product.updateOne({ _id: pd._id }, { countInStock: newStock }, function (err, records) {
             if (err) {
-              return false;
+               return false;
             } else {
-              return true;
+               return true;
             }
-          }
-        );
-  
-        products[pd._id] = { pd, ...products[pd._id] };
-      } else {
-        res.status(402).json({ message: `${pd.name} Stock out` });
-        res.end();
+         });
+         console.log(Product);
+
+         products[pd._id] = { pd, ...products[pd._id] };
       }
-      }
-    }else {
-      total = products['638744b46a203f7356044615'].total_price
-    }
-    
-    let prevDue = 0
-    if(transitionAll.length > 0){
-      prevDue = transitionAll[transitionAll.length - 1].totalDue
-      ? transitionAll[transitionAll.length - 1].totalDue
-      : 0;
-    }
-    console.log(total)
-    let totalDue = prevDue + total;
-    if (req.user.isAdmin == true) {
-      let createdBy = req.user._id;
-      const transition = await Transition.create({
-        products,
-        type,
-        customer,
-        totalDue: totalDue,
-        createdBy,
-        due: total,
-      });
-  
-      if (transition) {
-        let prevCustomer = await Customer.findOne({_id: customer})
-        prevCustomer.total_due = parseInt(prevCustomer.total_due) +  parseInt(transition.due)
-        prevCustomer.transitions.push(transition._id)
-        let newCustomer = await prevCustomer.save()
-        if(newCustomer){
-          res.status(201).json({
+      if (req.user.isAdmin == true) {
+         let createdBy = req.user._id;
+         const transition = await Transition.create({
+            products,
+            type,
+            customer,
+            totalDue: null,
+            createdBy,
+            due: total,
+         });
+
+         console.log(transition);
+         res.status(201).json({
             transition,
-          });
-        }
+         });
       } else {
-        res.status(400).json({ message: "Invalid customer data" });
+         res.status(401).json({ message: "Unauthorized User" });
       }
-    } else {
-      res.status(401).json({ message: "Unauthorized User" });
-    }
-  }else if (type === 'stock'){
-    console.log("reached")
-    for (let pd of allProduct) {
-        total += products[pd._id].qty * pd.price;
-        newStock = pd.countInStock + products[pd._id].qty;
-        console.log(newStock)
-        pd.countInStock = newStock;
-  
-        Product.updateOne(
-          { _id: pd._id },
-          { countInStock: newStock },
-          function (err, records) {
-            if (err) {
-              return false;
-            } else {
-              return true;
-            }
-          }
-        );
-        console.log(Product)
-  
-        products[pd._id] = { pd, ...products[pd._id] };
-      
-    }
-    if (req.user.isAdmin == true) {
-      let createdBy = req.user._id;
-      const transition = await Transition.create({
-        products,
-        type,
-        customer,
-        totalDue: null,
-        createdBy,
-        due: total,
-      });
-  
-      console.log(transition)
-      res.status(201).json({
-        transition,
-      });
-    } else {
-      res.status(401).json({ message: "Unauthorized User" });
-    }
-  }
+   }
 });
 
-
 export const payment = asyncHandler(async (req, res) => {
-  const { payment, type, customer } = req.body;
-  console.log(req.body);
-  if (req.user.isAdmin == true) {
-    let createdBy = req.user._id;
-    let transitionAll = await Transition.find({ customer: customer });
-    let mycstmer = await Customer.findOne({ _id: customer });
-    console.log("prevDue", mycstmer);
+   const { payment, type, customer } = req.body;
+   console.log(req.body);
+   if (req.user.isAdmin == true) {
+      let createdBy = req.user._id;
+      let transitionAll = await Transition.find({ customer: customer });
+      let mycstmer = await Customer.findOne({ _id: customer });
+      console.log("prevDue", mycstmer);
 
-    let prevDue = mycstmer.total_due;
+      let prevDue = mycstmer.total_due;
 
-    let totalDue = parseInt(prevDue) - parseInt(payment);
-    console.log(totalDue);
-    const transition = await Transition.create({
-      payment,
-      type,
-      customer,
-      createdBy,
-      totalDue,
-    });
-    if (transition) {
-      let newCustomer = await Customer.updateOne(
-        {
-          _id: customer,
-        },
-        {
-          $set: { total_due: totalDue },
-          $push: {
-            transitions: transition._id,
-          },
-        }
-      );
-      res.status(201).json({
-        transition,
+      let totalDue = parseInt(prevDue) - parseInt(payment);
+      console.log(totalDue);
+      const transition = await Transition.create({
+         payment,
+         type,
+         customer,
+         createdBy,
+         totalDue,
       });
-      if (mycstmer.phone_number || true) {
-        let today = "" + new Date();
-        let text = `আপনি আজকে(${today.split(" ")[1]} ${today.split(" ")[2]} ${
-          today.split(" ")[3]
-        }) ${payment}  টাকা জমা দিয়েছেন । আপনার বর্তমান বাকি ${newCustomer.totalDue} টাকা ।
+      if (transition) {
+         let newCustomer = await Customer.updateOne(
+            {
+               _id: customer,
+            },
+            {
+               $set: { total_due: totalDue },
+               $push: {
+                  transitions: transition._id,
+               },
+            }
+         );
+         res.status(201).json({
+            transition,
+         });
+         if (mycstmer.phone_number || true) {
+            let today = "" + new Date();
+            let text = `আপনি আজকে(${today.split(" ")[1]} ${today.split(" ")[2]} ${
+               today.split(" ")[3]
+            }) ${payment}  টাকা জমা দিয়েছেন । আপনার বর্তমান বাকি ${newCustomer.totalDue} টাকা ।
           মেসার্স রহমান ট্রেডার্স `;
 
-        const url = `http://66.45.237.70/api.php?username=01644686490&password=MVBK93WP&number=8801644686490&message=${text}`;
-        const headers = {
-          "Content-Type": "application/x-www-form-urlencoded",
-        };
+            const url = `http://66.45.237.70/api.php?username=01644686490&password=MVBK93WP&number=8801644686490&message=${text}`;
+            const headers = {
+               "Content-Type": "application/x-www-form-urlencoded",
+            };
 
-        fetch(url, { method: "POST", headers: headers })
-          .then((res) => {
-            return res.json();
-          })
-          .then((json) => {
-            // Do something with the returned data.
-            console.log(json);
-          });
+            fetch(url, { method: "POST", headers: headers })
+               .then((res) => {
+                  return res.json();
+               })
+               .then((json) => {
+                  // Do something with the returned data.
+                  console.log(json);
+               });
+         }
+      } else {
+         res.status(400).json({ message: "Invalid customer data" });
       }
-    } else {
-      res.status(400).json({ message: "Invalid customer data" });
-    }
-  } else {
-    res.status(401).json({ message: "Unauthorized User" });
-  }
+   } else {
+      res.status(401).json({ message: "Unauthorized User" });
+   }
 });

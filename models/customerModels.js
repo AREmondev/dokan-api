@@ -10,6 +10,10 @@ const TransitionSchema = mongoose.Schema(
 )
 const customerSchema = mongoose.Schema(
   {
+    pageId: {
+      type: Number,
+      required: false,
+    },
     name: {
       type: String,
       required: true,

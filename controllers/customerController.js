@@ -12,11 +12,13 @@ export const createNewCustomer = asyncHandler(async (req, res) => {
     village,
     phone_number,
     total_due,
+    pageId
   } = req.body;
   if (req.user.isAdmin == true) {
     console.log(req.body)
     let createdBy = req.user._id;
     const customer = await Customer({
+      pageId,
       name,
       father_name,
       village,
@@ -121,17 +123,30 @@ export const getSingleCustomer = asyncHandler(async (req, res) => {
     res.status(400).json({ message: "Invalid customer data" });
   }
 });
+export const updateCustomerPageId = asyncHandler(async (req, res) => {
+  const customer = await Customer.findById(req.params.id)
 
+  if (customer) {
+    customer.pageId = req.body.pageId
+    let newCustomer = await customer.save();
+    res.status(200).json({
+      newCustomer,
+    });
+  } else {
+    res.status(400).json({ message: "Invalid customer data" });
+  }
+});
 export const createOrder = asyncHandler(async (req, res) => {
-  console.log(req.body);
   const { products, type, customer } = req.body;
+  
   let allProduct = await Product.find({ _id: { $in: Object.keys(products) } });
   let transitionAll = await Transition.find({ customer: customer });
 
   var total = 0;
   var newStock;
   if(type == 'order'){
-    for (let pd of allProduct) {
+    if(products['638744b46a203f7356044615']?.name != 'Custom'){
+      for (let pd of allProduct) {
       if (pd.countInStock > products[pd._id].qty) {
         total += products[pd._id].qty * pd.price;
         newStock = pd.countInStock - products[pd._id].qty;
@@ -154,13 +169,18 @@ export const createOrder = asyncHandler(async (req, res) => {
         res.status(402).json({ message: `${pd.name} Stock out` });
         res.end();
       }
+      }
+    }else {
+      total = products['638744b46a203f7356044615'].total_price
     }
+    
     let prevDue = 0
     if(transitionAll.length > 0){
       prevDue = transitionAll[transitionAll.length - 1].totalDue
       ? transitionAll[transitionAll.length - 1].totalDue
       : 0;
     }
+    console.log(total)
     let totalDue = prevDue + total;
     if (req.user.isAdmin == true) {
       let createdBy = req.user._id;

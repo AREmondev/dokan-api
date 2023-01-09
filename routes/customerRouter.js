@@ -6,6 +6,7 @@ import {
   createOrder,
   getAllCustomer,
   filterCustomer,
+  updateCustomerPageId,
 } from "../controllers/customerController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -23,6 +24,7 @@ router.route("/").get(protect, getAllCustomer);
 
 router.route("/filterCustomer").get(protect, filterCustomer);
 router.route("/:id").get(protect, getSingleCustomer);
+router.route("/:id").put(protect, updateCustomerPageId);
 router.route("/payment").post(protect, payment);
 router.route("/order").post(protect, createOrder);
 

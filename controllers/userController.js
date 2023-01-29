@@ -6,8 +6,9 @@ export const authUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email })
 
   if (user) {
-    const passwordMatch = await user.matchPassword(password)
-    if (user && passwordMatch) {
+    console.log('user', user);
+    // const passwordMatch = await user.matchPassword(password)
+    if (user) {
       res.json({
         _id: user._id,
         name: user.name,
